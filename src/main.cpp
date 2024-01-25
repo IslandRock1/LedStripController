@@ -31,6 +31,14 @@ void setup() {
 
     controller = LedController();
     FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+
+    Serial.begin(9600);
+}
+
+void printLed(int ix) {
+    auto led = leds[ix];
+    Serial.print(led.r + led.g + led.b);
+    Serial.print(" | ");
 }
 
 void loop() {
@@ -47,5 +55,4 @@ void loop() {
     cycle(midRight, NUM_LEDS);
 
     delay(10);
-
 }
