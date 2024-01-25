@@ -2,37 +2,38 @@
 // Created by Øystein Bringsli.
 //
 
+
+#include <cmath>
 #include "LedController.hpp"
 
+LedController::LedController() {}
 
-
-double myFmod(double x, double y) {
+float myFmod(float x, float y) {
     if (y == 0.0) {
         // Handle division by zero
         return 0.0;
     }
 
-    double quotient = x / y;
-    double intPart = static_cast<int>(quotient); // Integer part of the quotient
-    return x - y * intPart;
+    float quotient = x / y;
+    return x - y * floorf(quotient);
 }
 
-double myAbs(double x) {
+float myAbs(float x) {
     return (x < 0) ? -x : x;
 }
 
-RGB LedController::nextHueColor() {
+LedController::RGB LedController::nextHueColor() {
 
     hue++;
     hue = myFmod(hue, 360);
 
     auto hueNormalized = hue / 60.0;
-    double chroma = 1.0;
+    float chroma = 1.0;
 
     // Calculate intermediate values
 
-    double x = chroma * (1.0 - myAbs(myFmod(hueNormalized, 2.0) - 1.0));
-    double r1, g1, b1;
+    float x = chroma * (1.0 - myAbs(myFmod(hueNormalized, 2.0) - 1.0));
+    float r1, g1, b1;
 
     if (hueNormalized < 1.0) {
         r1 = chroma;
@@ -61,7 +62,7 @@ RGB LedController::nextHueColor() {
     }
 
     // Calculate the lightness component
-    double m = 1.0 - chroma;
+    float m = 1.0 - chroma;
 
     // Convert RGB values to 8-bit integers
     auto r = static_cast<int>((r1 + m) * 15);
