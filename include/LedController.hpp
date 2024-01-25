@@ -6,6 +6,7 @@
 #define LEDSTRIPCONTROLLER_LEDCONTROLLER_HPP
 
 class LedController {
+
 public:
     struct RGB{
         int r;
@@ -15,8 +16,10 @@ public:
 
     LedController();
     RGB nextHueColor();
+
 private:
     float hue = 1.0;
+
 };
 
 
