@@ -3,7 +3,7 @@
 
 #include "LedController.hpp"
 
-#define NUM_LEDS 60
+#define NUM_LEDS 432
 #define DATA_PIN 33
 CRGB leds[NUM_LEDS];
 CRGB crgb;
@@ -53,6 +53,8 @@ void loop() {
 
     cycle(midLeft, 0);
     cycle(midRight, NUM_LEDS);
+
+    FastLED.show();
 
     delay(10);
 }
