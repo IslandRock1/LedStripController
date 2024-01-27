@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <FastLed.h>
+#include <WiFi.h>
 
+#include "internetAccess.hpp"
 #include "LedController.hpp"
 
 #define NUM_LEDS 432
@@ -27,12 +29,14 @@ void cycle(int start, int end) {
 }
 
 void setup() {
-    delay(3000); // To protect from to much power consumption??
+    delay(3000); // To protect from too much power consumption??
 
     controller = LedController();
     FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
 
-    Serial.begin(9600);
+    Serial.begin(9600); // Not used when wireless
+
+    WiFi.begin(internetSSID, internetPassword);
 }
 
 void printLed(int ix) {
