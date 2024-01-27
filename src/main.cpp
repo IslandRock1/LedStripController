@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <FastLed.h>
 #include <WiFi.h>
+#include <ArduinoOTA.h>
 
 #include "internetAccess.hpp"
 #include "LedController.hpp"
@@ -37,15 +38,17 @@ void setup() {
     Serial.begin(9600); // Not used when wireless
 
     WiFi.begin(internetSSID, internetPassword);
-}
 
-void printLed(int ix) {
-    auto led = leds[ix];
-    Serial.print(led.r + led.g + led.b);
-    Serial.print(" | ");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(100);
+    }
+
+    ArduinoOTA.begin();
 }
 
 void loop() {
+
+    ArduinoOTA.handle();
 
     auto midLeft = NUM_LEDS / 2;
     auto midRight = midLeft + 1;
@@ -61,4 +64,5 @@ void loop() {
     FastLED.show();
 
     delay(10);
+
 }
