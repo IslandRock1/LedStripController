@@ -2,11 +2,20 @@
 // Created by Øystein Bringsli.
 //
 
-
 #include <cmath>
+#include <FastLED.h>
 #include "LedController.hpp"
 
-LedController::LedController() {}
+#define NUM_LEDS 432
+#define DATA_PIN 33
+
+CRGB leds[NUM_LEDS];
+CRGB crgb;
+
+LedController::LedController()
+    : prevColorChangeTime(millis()), prevCycleChangeTime(millis()) {
+    FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+}
 
 float myFmod(float x, float y) {
     if (y == 0.0f) {
@@ -70,4 +79,48 @@ LedController::RGB LedController::nextHueColor() {
     auto b = static_cast<int>((b1 + m) * 15);
 
     return {r, g, b};
+}
+
+void LedController::cycle(RGB nextColor, int start, int end) {
+    if (start < end) {
+        for (int i = end; i > start; i--)
+        {
+            leds[i] = leds[i - 1];
+        }
+    }
+
+    else if (start > end) {
+        for (int i = end; i < start; i++)
+        {
+            leds[i] = leds[i + 1];
+        }
+    }
+
+    leds[start] = crgb.setRGB(nextColor.r, nextColor.g, nextColor.b);
+}
+
+void LedController::fadeIn() {
+    unsigned long timeStep = 60000;
+    if ((millis() - prevColorChangeTime) > timeStep) {
+        if (currentColor.b < currentColor.g) {
+            currentColor.b++;
+        } else {
+            currentColor.r++;
+        }
+
+        if (currentColor.r > 15) {currentColor.r = 15;}
+        prevColorChangeTime = millis();
+    }
+
+    unsigned long cycleTimeStep = 200;
+    if ((millis() - prevCycleChangeTime) > cycleTimeStep) {
+        cycle(currentColor, 0, NUM_LEDS);
+        prevCycleChangeTime = millis();
+    }
+}
+
+void LedController::step() {
+    fadeIn();
+
+    FastLED.show();
 }
