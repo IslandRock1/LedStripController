@@ -10,9 +10,9 @@ LedController controller;
 void setup() {
     delay(3000); // To protect from too much power consumption??
 
-    controller = LedController();
-
-    Serial.begin(9600); // Not used when wireless
+    Serial.begin(115200);
+    Serial.println();
+    Serial.println("Serial established.");
 
     WiFi.begin(internetSSID, internetPassword);
 
@@ -20,11 +20,13 @@ void setup() {
         delay(100);
     }
 
+    Serial.println("Wifi connected.");
+
+    controller.init();
     ArduinoOTA.begin();
 }
 
 void loop() {
-
     ArduinoOTA.handle();
     controller.step();
 }
