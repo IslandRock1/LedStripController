@@ -83,9 +83,10 @@ LedController::RGB LedController::nextHueColor() {
     float m = 1.0f - chroma;
 
     // Convert RGB values to 4-bit integers
-    auto r = static_cast<int>((r1 + m) * 15);
-    auto g = static_cast<int>((g1 + m) * 15);
-    auto b = static_cast<int>((b1 + m) * 15);
+    float colorSize = 255.0;
+    auto r = static_cast<int>((r1 + m) * colorSize);
+    auto g = static_cast<int>((g1 + m) * colorSize);
+    auto b = static_cast<int>((b1 + m) * colorSize);
 
     return {r, g, b};
 }
@@ -105,7 +106,11 @@ void LedController::cycle(RGB nextColor, int start, int end) {
         }
     }
 
-    leds[start] = crgb.setRGB(nextColor.r, nextColor.g, nextColor.b);
+    leds[start].r = nextColor.r;
+    leds[start].g = nextColor.g;
+    leds[start].b = nextColor.b;
+
+    // leds[start] = crgb.setRGB(nextColor.r, nextColor.g, nextColor.b);
 }
 
 void LedController::turnOff() {
@@ -117,7 +122,10 @@ void LedController::turnOff() {
 void LedController::fadeIn() {
     Serial.println("FadeIn");
 
-    unsigned long timeStep = 60000;
+    constexpr unsigned long fadeTime = 30 * 60; // 30 minutes
+    constexpr unsigned long numColorChanges = 768;
+
+    constexpr unsigned long timeStep = 1000 * fadeTime / numColorChanges;
     if ((millis() - prevColorChangeTime) > timeStep) {
         if (currentColorTimer.b < currentColorTimer.g) {
             currentColorTimer.b++;
@@ -127,11 +135,11 @@ void LedController::fadeIn() {
             currentColorTimer.r++;
         }
 
-        if (currentColorTimer.r > 15) { currentColorTimer.r = 15;}
+        if (currentColorTimer.r > 255) { currentColorTimer.r = 255;}
         prevColorChangeTime = millis();
     }
 
-    unsigned long cycleTimeStep = 200;
+    constexpr unsigned long cycleTimeStep = timeStep / 20;
     if ((millis() - prevCycleChangeTime) > cycleTimeStep) {
         cycle(currentColorTimer, 0, NUM_LEDS - 1);
         prevCycleChangeTime = millis();
@@ -141,7 +149,10 @@ void LedController::fadeIn() {
 void LedController::fadeOut() {
     Serial.println("FadeOut");
 
-    unsigned long timeStep = 60000;
+    constexpr unsigned long fadeTime = 30 * 60; // 30 minutes
+    constexpr unsigned long numColorChanges = 768;
+
+    constexpr unsigned long timeStep = 1000 * fadeTime / numColorChanges;
     if ((millis() - prevColorChangeTime) > timeStep) {
         if (currentColorTimer.b > currentColorTimer.g) {
             currentColorTimer.b--;
@@ -155,7 +166,7 @@ void LedController::fadeOut() {
         prevColorChangeTime = millis();
     }
 
-    unsigned long cycleTimeStep = 200;
+    unsigned long cycleTimeStep = timeStep / 20;
     if ((millis() - prevCycleChangeTime) > cycleTimeStep) {
         cycle(currentColorTimer, 0, NUM_LEDS - 1);
         prevCycleChangeTime = millis();
@@ -163,7 +174,7 @@ void LedController::fadeOut() {
 }
 
 void LedController::cycleHue() {
-    unsigned long hueTimeStep = 100;
+    unsigned long hueTimeStep = 2;
     if ((millis() - prevHueCycle) > hueTimeStep) {
         auto next = nextHueColor();
         cycle(next, 0, NUM_LEDS - 1);
@@ -190,7 +201,7 @@ void LedController::updateTimeState() {
 
             case DateTime::EVENING:
             {
-                currentColorTimer = {15, 15, 15};
+                currentColorTimer = {255, 255, 255};
             } break;
             case DateTime::NIGHT:
             {
@@ -212,6 +223,7 @@ void LedController::step() {
         case DateTime::DAY:
         {
             cycleHue();
+            // turnOff();
         } break;
         case DateTime::EVENING:
         {
