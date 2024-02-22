@@ -25,6 +25,7 @@ public:
 
 private:
     float hue = 1.0;
+    unsigned long prevHueCycle;
 
     RGB currentColorTimer = {1, 1, 1};
     unsigned long prevColorChangeTime;
@@ -37,6 +38,7 @@ private:
     void turnOff();
     void fadeIn();
     void fadeOut();
+    void cycleHue();
 
 };
 

@@ -14,7 +14,7 @@ CRGB leds[NUM_LEDS];
 CRGB crgb;
 
 LedController::LedController()
-    : prevColorChangeTime(millis()), prevCycleChangeTime(millis()) {
+    : prevColorChangeTime(millis()), prevCycleChangeTime(millis()), prevHueCycle(millis()) {
 }
 
 void LedController::init() {
@@ -162,6 +162,15 @@ void LedController::fadeOut() {
     }
 }
 
+void LedController::cycleHue() {
+    unsigned long hueTimeStep = 100;
+    if ((millis() - prevHueCycle) > hueTimeStep) {
+        auto next = nextHueColor();
+        cycle(next, 0, NUM_LEDS - 1);
+        prevHueCycle = millis();
+    }
+}
+
 void LedController::updateTimeState() {
     auto newState = dateTime.getTimeState();
     if (newState != currentTimeState) {
@@ -172,6 +181,11 @@ void LedController::updateTimeState() {
             case DateTime::MORNING:
             {
                 currentColorTimer = {0, 0, 0};
+            } break;
+
+            case DateTime::DAY:
+            {
+                prevHueCycle = millis();
             } break;
 
             case DateTime::EVENING:
@@ -197,7 +211,7 @@ void LedController::step() {
         } break;
         case DateTime::DAY:
         {
-
+            cycleHue();
         } break;
         case DateTime::EVENING:
         {
