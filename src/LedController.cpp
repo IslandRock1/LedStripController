@@ -4,6 +4,7 @@
 
 #include <cmath>
 #include <FastLED.h>
+#include "DateTime.hpp"
 #include "LedController.hpp"
 
 #define NUM_LEDS 432
@@ -14,7 +15,15 @@ CRGB crgb;
 
 LedController::LedController()
     : prevColorChangeTime(millis()), prevCycleChangeTime(millis()) {
+}
+
+void LedController::init() {
     FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+
+    dateTime = {};
+    dateTime.init();
+
+    currentTimeState = dateTime.getTimeState();
 }
 
 float myFmod(float x, float y) {
@@ -99,28 +108,106 @@ void LedController::cycle(RGB nextColor, int start, int end) {
     leds[start] = crgb.setRGB(nextColor.r, nextColor.g, nextColor.b);
 }
 
+void LedController::turnOff() {
+    for (int i = 0; i < (NUM_LEDS - 1); i++) {
+        leds[i] = crgb.setRGB(0, 0, 0);
+    }
+}
+
 void LedController::fadeIn() {
+    Serial.println("FadeIn");
+
     unsigned long timeStep = 60000;
     if ((millis() - prevColorChangeTime) > timeStep) {
-        if (currentColor.b < currentColor.g) {
-            currentColor.b++;
+        if (currentColorTimer.b < currentColorTimer.g) {
+            currentColorTimer.b++;
+        } else if (currentColorTimer.g < currentColorTimer.r) {
+            currentColorTimer.g++;
         } else {
-            currentColor.r++;
+            currentColorTimer.r++;
         }
 
-        if (currentColor.r > 15) {currentColor.r = 15;}
+        if (currentColorTimer.r > 15) { currentColorTimer.r = 15;}
         prevColorChangeTime = millis();
     }
 
     unsigned long cycleTimeStep = 200;
     if ((millis() - prevCycleChangeTime) > cycleTimeStep) {
-        cycle(currentColor, 0, NUM_LEDS);
+        cycle(currentColorTimer, 0, NUM_LEDS - 1);
         prevCycleChangeTime = millis();
     }
 }
 
+void LedController::fadeOut() {
+    Serial.println("FadeOut");
+
+    unsigned long timeStep = 60000;
+    if ((millis() - prevColorChangeTime) > timeStep) {
+        if (currentColorTimer.b > currentColorTimer.g) {
+            currentColorTimer.b--;
+        } else if (currentColorTimer.g > currentColorTimer.r) {
+            currentColorTimer.g--;
+        } else {
+            currentColorTimer.r--;
+        }
+
+        if (currentColorTimer.r < 0) { currentColorTimer.r = 0;}
+        prevColorChangeTime = millis();
+    }
+
+    unsigned long cycleTimeStep = 200;
+    if ((millis() - prevCycleChangeTime) > cycleTimeStep) {
+        cycle(currentColorTimer, 0, NUM_LEDS - 1);
+        prevCycleChangeTime = millis();
+    }
+}
+
+void LedController::updateTimeState() {
+    auto newState = dateTime.getTimeState();
+    if (newState != currentTimeState) {
+        currentTimeState = newState;
+
+        switch (currentTimeState) {
+
+            case DateTime::MORNING:
+            {
+                currentColorTimer = {0, 0, 0};
+            } break;
+
+            case DateTime::EVENING:
+            {
+                currentColorTimer = {15, 15, 15};
+            } break;
+            case DateTime::NIGHT:
+            {
+                turnOff();
+            } break;
+        }
+    }
+}
+
 void LedController::step() {
-    fadeIn();
+    updateTimeState();
+
+    switch (currentTimeState) {
+
+        case DateTime::MORNING:
+        {
+            fadeIn();
+        } break;
+        case DateTime::DAY:
+        {
+
+        } break;
+        case DateTime::EVENING:
+        {
+            fadeOut();
+        } break;
+        case DateTime::NIGHT:
+        {
+            turnOff(); //  Not really necessary, but try to stop me.
+        } break;
+    }
 
     FastLED.show();
 }

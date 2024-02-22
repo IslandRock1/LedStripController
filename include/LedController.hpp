@@ -5,6 +5,8 @@
 #ifndef LEDSTRIPCONTROLLER_LEDCONTROLLER_HPP
 #define LEDSTRIPCONTROLLER_LEDCONTROLLER_HPP
 
+#include "DateTime.hpp"
+
 class LedController {
 
 public:
@@ -15,6 +17,8 @@ public:
     };
 
     LedController();
+    void init();
+
     RGB nextHueColor();
     static void cycle(RGB nextColor, int start, int end);
     void step();
@@ -22,10 +26,15 @@ public:
 private:
     float hue = 1.0;
 
-    RGB currentColor = {1, 1, 1};
+    RGB currentColorTimer = {1, 1, 1};
     unsigned long prevColorChangeTime;
     unsigned long prevCycleChangeTime;
 
+    DateTime dateTime;
+    DateTime::TimeState currentTimeState;
+    void updateTimeState();
+
+    void turnOff();
     void fadeIn();
     void fadeOut();
 
