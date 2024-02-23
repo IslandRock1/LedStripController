@@ -21,16 +21,21 @@ DateTime::TimeState DateTime::getTimeState() {
 
     auto time = timeInfo.tm_hour * 100 + timeInfo.tm_min;
 
-    int nightTime = 2330;
-    int eveningTime = 2300;
-    int schoolTime = 1600;
-    int dayTime = 900;
     int morningTime = 830;
+    int schoolTime = 900;
+    int dayTime = 1600;
+    int eveningTime = 2300;
+    int nightTime = 2330;
 
     switch (timeInfo.tm_wday) {
         case 0:
+        {
             // Sunday
-            break;
+            morningTime = 1000;
+            schoolTime = 1030;
+            dayTime = 1031;
+        } break;
+
         case 1:
             // Monday
             break;
@@ -46,13 +51,26 @@ DateTime::TimeState DateTime::getTimeState() {
 
         case 5:
         {
+            // Friday
             morningTime = 700;
-            dayTime = 730;
+            schoolTime = 730;
+
+            eveningTime = 2330;
+            nightTime = 2400;
         } break;
 
         case 6:
+        {
             // Saturday
-            break;
+            morningTime = 1000;
+            schoolTime = 1030;
+            dayTime = 1031;
+
+            eveningTime = 2330;
+            nightTime = 2400;
+
+        } break;
+
         default:
             // Invalid weekday
             break;
@@ -60,8 +78,8 @@ DateTime::TimeState DateTime::getTimeState() {
     
     if (time > nightTime) {return NIGHT;}
     else if (time > eveningTime) {return EVENING;}
+    else if (time > dayTime) {return DAY;}
     else if (time > schoolTime) {return SCHOOL;}
-    else if (time > dayTime) {return  DAY;}
     else if (time > morningTime) {return MORNING;}
     else {return NIGHT;}
 }
