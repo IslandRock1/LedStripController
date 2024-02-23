@@ -16,6 +16,7 @@ public:
 
     enum TimeState {
         MORNING,
+        SCHOOL,
         DAY,
         EVENING,
         NIGHT

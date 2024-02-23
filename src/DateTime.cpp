@@ -23,6 +23,7 @@ DateTime::TimeState DateTime::getTimeState() {
 
     int nightTime = 2330;
     int eveningTime = 2300;
+    int schoolTime = 1600;
     int dayTime = 900;
     int morningTime = 830;
 
@@ -46,7 +47,7 @@ DateTime::TimeState DateTime::getTimeState() {
         case 5:
         {
             morningTime = 700;
-            dayTime = 830;
+            dayTime = 730;
         } break;
 
         case 6:
@@ -59,6 +60,7 @@ DateTime::TimeState DateTime::getTimeState() {
     
     if (time > nightTime) {return NIGHT;}
     else if (time > eveningTime) {return EVENING;}
+    else if (time > schoolTime) {return SCHOOL;}
     else if (time > dayTime) {return  DAY;}
     else if (time > morningTime) {return MORNING;}
     else {return NIGHT;}
