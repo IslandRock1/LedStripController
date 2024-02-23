@@ -199,6 +199,11 @@ void LedController::updateTimeState() {
                 prevHueCycle = millis();
             } break;
 
+            case DateTime::SCHOOL:
+            {
+                turnOff();
+            }
+
             case DateTime::EVENING:
             {
                 currentColorTimer = {255, 255, 255};
