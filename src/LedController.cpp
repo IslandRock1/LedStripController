@@ -225,18 +225,16 @@ void LedController::step() {
         {
             fadeIn();
         } break;
+
         case DateTime::DAY:
         {
             cycleHue();
             // turnOff();
         } break;
+
         case DateTime::EVENING:
         {
             fadeOut();
-        } break;
-        case DateTime::NIGHT:
-        {
-            turnOff(); //  Not really necessary, but try to stop me.
         } break;
     }
 
