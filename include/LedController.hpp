@@ -22,6 +22,7 @@ public:
     RGB nextHueColor();
     static void cycle(RGB nextColor, int start, int end);
     void step();
+    static void flash();
 
 private:
     float hue = 1.0;
@@ -35,7 +36,8 @@ private:
     DateTime::TimeState currentTimeState;
     void updateTimeState();
 
-    void turnOff();
+    static void setAll(RGB color);
+    static void turnOff();
     void fadeIn();
     void fadeOut();
     void cycleHue();
