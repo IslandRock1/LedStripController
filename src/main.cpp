@@ -29,4 +29,7 @@ void setup() {
 void loop() {
     ArduinoOTA.handle();
     controller.step();
+
+    Serial.print("ESP32 IP Address: ");
+    Serial.println(WiFi.localIP());
 }
