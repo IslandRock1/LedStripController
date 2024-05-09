@@ -5,9 +5,11 @@
 #include "internetAccess.hpp"
 #include "LedController.hpp"
 #include "DateTime.hpp"
+#include "TimerStats.hpp"
 
 LedController controller;
 DateTime dateTime;
+TimerStats timer;
 unsigned long prevPrintTime;
 
 void setup() {
@@ -85,6 +87,7 @@ void printInfo() {
 void loop() {
 
     ArduinoOTA.handle();
+    timer.startTimer();
 
     int printInterval = 1000;
     if ((prevPrintTime + printInterval) < millis()) {
