@@ -28,6 +28,9 @@ public:
     TimeState getTimeState();
     CurrentTime getCurrentTime();
 
+    static int timeDiffSeconds(int t0, int t1);
+    double progress = 0.0;
+
 };
 
 
