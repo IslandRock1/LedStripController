@@ -5,6 +5,8 @@
 #ifndef LEDSTRIPCONTROLLER_LEDCONTROLLER_HPP
 #define LEDSTRIPCONTROLLER_LEDCONTROLLER_HPP
 
+#include <vector>
+
 #include "DateTime.hpp"
 
 class LedController {
@@ -23,6 +25,8 @@ public:
     static void cycle(RGB nextColor, int start, int end);
     void step();
     static void flash();
+    static void turnOff();
+    static void fastLedShow();
 
 private:
     float hue = 1.0;
@@ -37,10 +41,12 @@ private:
     void updateTimeState();
 
     static void setAll(RGB color);
-    static void turnOff();
     void fadeIn();
     void fadeOut();
     void cycleHue();
+
+    double t = 1.0;
+    std::vector<RGB> activationFunction(bool inverse = false) const;
 
 };
 

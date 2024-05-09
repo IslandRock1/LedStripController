@@ -80,7 +80,7 @@ LedController::RGB LedController::nextHueColor() {
     }
 
     // Calculate the lightness component
-    float m = 0.5f - chroma;
+    float m = 1.0f - chroma;
 
     // Convert RGB values to 4-bit integers
     float colorSize = 255.0;
@@ -132,62 +132,60 @@ void LedController::turnOff() {
     setAll({0, 0, 0});
 }
 
+std::vector<LedController::RGB> LedController::activationFunction(bool inverse) const {
+    LedController::RGB baseColor = {255, 255, 255};
+
+    int steps = 255;
+
+    double tim;
+    if (inverse) {
+        tim = 1 - t;
+    } else {
+        tim = t;
+    }
+
+    double ix = steps * NUM_LEDS * tim;
+
+    auto val = floor(steps * tim);
+    auto mod = static_cast<int>(ix) % NUM_LEDS;
+
+    std::vector<LedController::RGB> out;
+    for (int i = 0; i < NUM_LEDS; i++) {
+        auto outMult = (val + (i < mod)) / steps;
+        auto outR = static_cast<int>(baseColor.r * outMult);
+        auto outG = static_cast<int>(baseColor.g * outMult);
+        auto outB = static_cast<int>(baseColor.b * outMult);
+
+        out.push_back({outR, outG, outB});
+    }
+
+    return out;
+}
+
 void LedController::fadeIn() {
     Serial.println("FadeIn");
 
-    constexpr unsigned long fadeTime = 30 * 60; // 30 minutes in seconds
-    constexpr unsigned long numColorChanges = 765; //255 * 3
-
-    constexpr unsigned long timeStep = 1000 * fadeTime / numColorChanges;
-    if ((millis() - prevColorChangeTime) > timeStep) {
-        if (currentColorTimer.b < currentColorTimer.g) {
-            currentColorTimer.b++;
-        } else if (currentColorTimer.g < currentColorTimer.r) {
-            currentColorTimer.g++;
-        } else {
-            currentColorTimer.r++;
-        }
-
-        if (currentColorTimer.r > 255) { currentColorTimer.r = 255;}
-        prevColorChangeTime = millis();
-    }
-
-    constexpr unsigned long cycleTimeStep = timeStep / 20;
-    if ((millis() - prevCycleChangeTime) > cycleTimeStep) {
-        cycle(currentColorTimer, 0, NUM_LEDS - 1);
-        prevCycleChangeTime = millis();
+    auto out = activationFunction();
+    for (int i = 0; i < NUM_LEDS; i++) {
+        leds[i].r = out[i].r;
+        leds[i].g = out[i].g;
+        leds[i].b = out[i].b;
     }
 }
 
 void LedController::fadeOut() {
     Serial.println("FadeOut");
 
-    constexpr unsigned long fadeTime = 30 * 60; // 30 minutes
-    constexpr unsigned long numColorChanges = 765; // 255 * 3
-
-    constexpr unsigned long timeStep = 1000 * fadeTime / numColorChanges;
-    if ((millis() - prevColorChangeTime) > timeStep) {
-        if (currentColorTimer.b > currentColorTimer.g) {
-            currentColorTimer.b--;
-        } else if (currentColorTimer.g > currentColorTimer.r) {
-            currentColorTimer.g--;
-        } else {
-            currentColorTimer.r--;
-        }
-
-        if (currentColorTimer.r < 0) { currentColorTimer.r = 0;}
-        prevColorChangeTime = millis();
-    }
-
-    constexpr unsigned long cycleTimeStep = timeStep / 20;
-    if ((millis() - prevCycleChangeTime) > cycleTimeStep) {
-        cycle(currentColorTimer, 0, NUM_LEDS - 1);
-        prevCycleChangeTime = millis();
+    auto out = activationFunction(true);
+    for (int i = 0; i < NUM_LEDS; i++) {
+        leds[i].r = out[i].r;
+        leds[i].g = out[i].g;
+        leds[i].b = out[i].b;
     }
 }
 
 void LedController::cycleHue() {
-    unsigned long hueTimeStep = 2;
+    unsigned long hueTimeStep = 200;
     if ((millis() - prevHueCycle) > hueTimeStep) {
         auto next = nextHueColor();
         cycle(next, 0, NUM_LEDS - 1);
@@ -197,6 +195,8 @@ void LedController::cycleHue() {
 
 void LedController::updateTimeState() {
     auto newState = dateTime.getTimeState();
+    t = dateTime.progress;
+
     if (newState != currentTimeState) {
         currentTimeState = newState;
 
@@ -230,6 +230,7 @@ void LedController::updateTimeState() {
 }
 
 void LedController::step() {
+
     updateTimeState();
 
     switch (currentTimeState) {
@@ -250,5 +251,9 @@ void LedController::step() {
         } break;
     }
 
+    FastLED.show();
+}
+
+void LedController::fastLedShow() {
     FastLED.show();
 }
