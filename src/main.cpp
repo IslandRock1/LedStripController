@@ -87,7 +87,6 @@ void printInfo() {
 void loop() {
 
     ArduinoOTA.handle();
-    timer.startTimer();
 
     int printInterval = 1000;
     if ((prevPrintTime + printInterval) < millis()) {
@@ -96,4 +95,11 @@ void loop() {
     }
 
     controller.step();
+
+    /////////////////////// TIMER STATS ///////////////////////
+    // timer.startTimer();
+    // without FastLED.show()
+    // Loops/s: ~10000, Looptime: ~0.10 ms
+    // with FastLED.show()
+    // Loops/s: ~75, Looptime: ~13.3 ms
 }
