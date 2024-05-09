@@ -13,7 +13,7 @@ TimerStats timer;
 unsigned long prevPrintTime;
 
 void setup() {
-    // delay(3000); // To protect from too much power consumption??
+    delay(3000); // To protect from too much power consumption??
 
     Serial.begin(115200);
     Serial.println();
