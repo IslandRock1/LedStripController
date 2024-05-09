@@ -4,11 +4,14 @@
 
 #include "internetAccess.hpp"
 #include "LedController.hpp"
+#include "DateTime.hpp"
 
 LedController controller;
+DateTime dateTime;
+unsigned long prevPrintTime;
 
 void setup() {
-    delay(3000); // To protect from too much power consumption??
+    // delay(3000); // To protect from too much power consumption??
 
     Serial.begin(115200);
     Serial.println();
@@ -21,15 +24,73 @@ void setup() {
     }
 
     Serial.println("Wifi connected.");
+    prevPrintTime = millis();
 
     controller.init();
+    dateTime.init();
     ArduinoOTA.begin();
 }
 
-void loop() {
-    ArduinoOTA.handle();
-    controller.step();
+void printInfo() {
+
+    auto time = dateTime.getCurrentTime();
+    auto timeState = dateTime.getTimeState();
+    Serial.print("Current time: ");
+    Serial.print(time.hour);
+    Serial.print(":");
+    Serial.print(time.minute);
+    Serial.print(":");
+    Serial.print(time.second);
+
+    Serial.print(". Timestate: ");
+    switch (timeState) {
+
+        case DateTime::MORNING:
+        {
+            Serial.print("morning");
+        }
+            break;
+        case DateTime::SCHOOL:
+        {
+            Serial.print("school");
+        }
+            break;
+        case DateTime::DAY:
+        {
+            Serial.print("day");
+        }
+            break;
+        case DateTime::EVENING:
+        {
+            Serial.print("evening");
+        }
+            break;
+        case DateTime::NIGHT:
+        {
+            Serial.print("night");
+        }
+            break;
+    }
+    Serial.print(". ");
 
     Serial.print("ESP32 IP Address: ");
-    Serial.println(WiFi.localIP());
+    Serial.print(WiFi.localIP());
+
+    Serial.print(". t: ");
+    Serial.print(dateTime.progress, 8);
+
+    Serial.println();
+}
+
+void loop() {
+
+    ArduinoOTA.handle();
+
+    int printInterval = 1000;
+    if ((prevPrintTime + printInterval) < millis()) {
+        printInfo();
+        prevPrintTime = millis();
+    }
+
+    controller.step();
 }
