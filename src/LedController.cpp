@@ -7,6 +7,9 @@
 #include "DateTime.hpp"
 #include "LedController.hpp"
 
+
+//Behind desk: 144
+//Under bed: 432 (?)
 #define NUM_LEDS 432
 #define DATA_PIN 33
 
