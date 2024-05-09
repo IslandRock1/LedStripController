@@ -20,7 +20,7 @@ public:
     void printTimerData() const;
 
     unsigned long long printIters = 0;
-    int updateFreq = 1000;
+    int updateFreq = 75;
 
 private:
     unsigned long prevTime;
