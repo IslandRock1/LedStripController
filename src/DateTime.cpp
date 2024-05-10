@@ -104,9 +104,9 @@ DateTime::TimeState DateTime::getTimeState() {
             break;
     }
     
-    if (time > nightTime) {return NIGHT;}
+    if (time >= nightTime) {return NIGHT;}
 
-    else if (time > eveningTime) {
+    else if (time >= eveningTime) {
 
         auto T = timeDiffSeconds(eveningTime * 100, nightTime * 100);
         auto t = timeDiffSeconds(eveningTime * 100, time * 100 + timeInfo.tm_sec);
@@ -115,22 +115,18 @@ DateTime::TimeState DateTime::getTimeState() {
         return EVENING;
     }
 
-    else if (time > dayTime) {
+    else if (time >= dayTime) {
         auto T = timeDiffSeconds(dayTime * 100, eveningTime * 100);
         auto t = timeDiffSeconds(dayTime * 100, time * 100 + timeInfo.tm_sec);
-
-//        Serial.print(t);
-//        Serial.print(" | ");
-//        Serial.println(T);
 
         progress = static_cast<double>(t) / static_cast<double>(T);
 
         return DAY;
     }
 
-    else if (time > schoolTime) {return SCHOOL;}
+    else if (time >= schoolTime) {return SCHOOL;}
 
-    else if (time > morningTime) {
+    else if (time >= morningTime) {
         auto T = timeDiffSeconds(morningTime * 100, schoolTime * 100);
         auto t = timeDiffSeconds(morningTime * 100, time * 100 + timeInfo.tm_sec);
         progress = static_cast<double>(t) / static_cast<double>(T);
