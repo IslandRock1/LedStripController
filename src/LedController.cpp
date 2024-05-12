@@ -4,29 +4,21 @@
 
 #include <cmath>
 #include <FastLED.h>
-#include "DateTime.hpp"
 #include "LedController.hpp"
 
-
-//Behind desk: 144
-//Under bed: 432 (?)
-#define NUM_LEDS 432
+#define NUM_LEDS 144
 #define DATA_PIN 33
 
 CRGB leds[NUM_LEDS];
 CRGB crgb;
 
 LedController::LedController()
-    : prevColorChangeTime(millis()), prevCycleChangeTime(millis()), prevHueCycle(millis()) {
+    : prevHueCycle(millis()) {
 }
 
 void LedController::init() {
     FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
-
-    dateTime = {};
-    dateTime.init();
-
-    currentTimeState = dateTime.getTimeState();
+    FastLED.setMaxRefreshRate(0);
 }
 
 float myFmod(float x, float y) {
@@ -95,96 +87,14 @@ LedController::RGB LedController::nextHueColor() {
 }
 
 void LedController::cycle(LedController::RGB nextColor, int start, int end) {
-    if (start < end) {
-        for (int i = end; i > start; i--)
-        {
-            leds[i] = leds[i - 1];
-        }
-    }
-
-    else if (start > end) {
-        for (int i = end; i < start; i++)
-        {
-            leds[i] = leds[i + 1];
-        }
+    for (int i = end; i > start; i--)
+    {
+        leds[i] = leds[i - 1];
     }
 
     leds[start].r = nextColor.r;
     leds[start].g = nextColor.g;
     leds[start].b = nextColor.b;
-}
-
-void LedController::setAll(LedController::RGB color) {
-    for (auto &led : leds) {
-        led.r = color.r;
-        led.g = color.g;
-        led.b = color.b;
-    }
-}
-
-void LedController::flash() {
-    for (int i = 0; i < 30; i++) {
-        setAll({255, 255, 255});
-        delay(1000);
-        setAll({0, 0, 0});
-        delay(1000);
-    }
-}
-
-void LedController::turnOff() {
-    setAll({0, 0, 0});
-}
-
-std::vector<LedController::RGB> LedController::activationFunction(bool inverse) const {
-    LedController::RGB baseColor = {255, 255, 255};
-
-    int steps = 255;
-
-    double tim;
-    if (inverse) {
-        tim = 1 - t;
-    } else {
-        tim = t;
-    }
-
-    double ix = steps * NUM_LEDS * tim;
-
-    auto val = floor(steps * tim);
-    auto mod = static_cast<int>(ix) % NUM_LEDS;
-
-    std::vector<LedController::RGB> out;
-    for (int i = 0; i < NUM_LEDS; i++) {
-        auto outMult = (val + (i < mod)) / steps;
-        auto outR = static_cast<int>(baseColor.r * outMult);
-        auto outG = static_cast<int>(baseColor.g * outMult);
-        auto outB = static_cast<int>(baseColor.b * outMult);
-
-        out.push_back({outR, outG, outB});
-    }
-
-    return out;
-}
-
-void LedController::fadeIn() {
-    Serial.println("FadeIn");
-
-    auto out = activationFunction();
-    for (int i = 0; i < NUM_LEDS; i++) {
-        leds[i].r = out[i].r;
-        leds[i].g = out[i].g;
-        leds[i].b = out[i].b;
-    }
-}
-
-void LedController::fadeOut() {
-    Serial.println("FadeOut");
-
-    auto out = activationFunction(true);
-    for (int i = 0; i < NUM_LEDS; i++) {
-        leds[i].r = out[i].r;
-        leds[i].g = out[i].g;
-        leds[i].b = out[i].b;
-    }
 }
 
 void LedController::cycleHue() {
@@ -196,67 +106,7 @@ void LedController::cycleHue() {
     }
 }
 
-void LedController::updateTimeState() {
-    auto newState = dateTime.getTimeState();
-    t = dateTime.progress;
-
-    if (newState != currentTimeState) {
-        currentTimeState = newState;
-
-        switch (currentTimeState) {
-
-            case DateTime::MORNING:
-            {
-                currentColorTimer = {0, 0, 0};
-            } break;
-
-            case DateTime::DAY:
-            {
-                prevHueCycle = millis();
-            } break;
-
-            case DateTime::SCHOOL:
-            {
-                turnOff();
-            }
-
-            case DateTime::EVENING:
-            {
-                currentColorTimer = {255, 255, 255};
-            } break;
-            case DateTime::NIGHT:
-            {
-                turnOff();
-            } break;
-        }
-    }
-}
-
 void LedController::step() {
-
-    updateTimeState();
-
-    switch (currentTimeState) {
-
-        case DateTime::MORNING:
-        {
-            fadeIn();
-        } break;
-
-        case DateTime::DAY:
-        {
-            cycleHue();
-        } break;
-
-        case DateTime::EVENING:
-        {
-            fadeOut();
-        } break;
-    }
-
-    FastLED.show();
-}
-
-void LedController::fastLedShow() {
+    cycleHue();
     FastLED.show();
 }
